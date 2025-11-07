@@ -1,6 +1,6 @@
 ```bash
 npm install
-npm compile
+npm run compile
 
 # Add your OpenAI API key
 # Edit src/chatViewProvider.ts

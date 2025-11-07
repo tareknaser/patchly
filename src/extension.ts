@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { ReDoSDetector, PatchlyDiagnostic } from './redosDetector';
 import { PatchlyCodeActionProvider } from './codeActions';
 import { ChatViewProvider } from './chatViewProvider';
+import { PatchlyHoverProvider } from './hoverProvider';
+import { PatchlyCodeLensProvider } from './codeLensProvider';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let chatViewProvider: ChatViewProvider;
@@ -10,6 +12,23 @@ export function activate(context: vscode.ExtensionContext) {
     chatViewProvider = new ChatViewProvider(context);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider)
+    );
+
+    // Register hover provider
+    context.subscriptions.push(
+        vscode.languages.registerHoverProvider(
+            [{language:'javascript'},{language:'typescript'},{language:'javascriptreact'},{language:'typescriptreact'}],
+            new PatchlyHoverProvider()
+        )
+    );
+
+    // Register code lens provider
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider(
+            [{ language: 'javascript' }, { language: 'typescript' },
+            { language: 'javascriptreact' }, { language: 'typescriptreact' }],
+            new PatchlyCodeLensProvider()
+        )
     );
 
     diagnosticCollection = vscode.languages.createDiagnosticCollection('patchly');
@@ -58,12 +77,9 @@ export function activate(context: vscode.ExtensionContext) {
             const dummyFix = {
                 explanation: "This pattern has nested quantifiers causing exponential backtracking.",
                 fixedPattern: "/^a+$/",
-                comment: "// Fixed: Removed nested quantifier"
             };
 
             const edit = new vscode.WorkspaceEdit();
-            const lineStart = new vscode.Position(diagnostic.range.start.line, 0);
-            edit.insert(document.uri, lineStart, `${dummyFix.comment}\n`);
             edit.replace(document.uri, diagnostic.range, dummyFix.fixedPattern);
 
             const success = await vscode.workspace.applyEdit(edit);
@@ -88,8 +104,19 @@ export function activate(context: vscode.ExtensionContext) {
 
     // TODO: Implement ignore warning functionality
     context.subscriptions.push(
-        vscode.commands.registerCommand('patchly.ignoreWarning', async () => {
-            vscode.window.showInformationMessage('Ignore feature not implemented yet');
+        vscode.commands.registerCommand('patchly.ignoreWarning', async (startLine: number, documentURI: string) => {
+            if (!startLine) {
+                vscode.window.showErrorMessage(`Could not ignore warning ${startLine}, ${documentURI}`);
+                return;
+            }
+            const edit = new vscode.WorkspaceEdit();
+            const lineStart = new vscode.Position(startLine, 0);
+            const uri = vscode.Uri.parse(documentURI);
+            edit.insert(uri, lineStart, `// patchly-disable-next-line redos\n`);
+            const success = await vscode.workspace.applyEdit(edit);
+            if (!success) {
+                vscode.window.showErrorMessage('Could not ignore warning');
+            }
         })
     );
 }
@@ -98,7 +125,6 @@ function analyzeDocument(document: vscode.TextDocument) {
     if (document.languageId !== 'javascript' && document.languageId !== 'typescript') {
         return;
     }
-
     const detector = new ReDoSDetector();
     const vulnerabilities = detector.detectVulnerabilities(document.getText(), document);
     diagnosticCollection.set(document.uri, vulnerabilities);

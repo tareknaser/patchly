@@ -43,8 +43,7 @@ export class RecheckWrapper {
         }
 
         if (result.status === 'vulnerable') {
-            const type = result.complexity?.type || 'unknown';
-            return `Potential ReDoS: ${type} complexity`;
+            return `Potential ReDoS`;
         }
 
         return 'Unable to analyze this regex';

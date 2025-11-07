@@ -20,8 +20,8 @@ export class PatchlyCodeActionProvider implements vscode.CodeActionProvider {
         const actions: vscode.CodeAction[] = [];
         for (const diagnostic of patchlyDiagnostics) {
             actions.push(
-                this.createFixAction(diagnostic, document),
                 this.createLearnAction(diagnostic),
+                this.createFixAction(diagnostic, document),
                 this.createIgnoreAction(diagnostic, document)
             );
         }
@@ -30,34 +30,34 @@ export class PatchlyCodeActionProvider implements vscode.CodeActionProvider {
     }
 
     private createFixAction(diagnostic: PatchlyDiagnostic, document: vscode.TextDocument): vscode.CodeAction {
-        const action = new vscode.CodeAction('Fix this ReDoS vulnerability', vscode.CodeActionKind.QuickFix);
+        const action = new vscode.CodeAction('Patchly: Fix', vscode.CodeActionKind.QuickFix);
         action.command = {
             command: 'patchly.suggestFix',
             title: 'Suggest Fix',
             arguments: [diagnostic, document]
         };
         action.diagnostics = [diagnostic];
-        action.isPreferred = true;
         return action;
     }
 
     private createLearnAction(diagnostic: PatchlyDiagnostic): vscode.CodeAction {
-        const action = new vscode.CodeAction('Learn why this is vulnerable', vscode.CodeActionKind.QuickFix);
+        const action = new vscode.CodeAction('Patchly: Explain', vscode.CodeActionKind.QuickFix);
         action.command = {
             command: 'patchly.learnMore',
             title: 'Learn More',
             arguments: [diagnostic]
         };
         action.diagnostics = [diagnostic];
+        action.isPreferred = true;
         return action;
     }
 
     private createIgnoreAction(diagnostic: PatchlyDiagnostic, document: vscode.TextDocument): vscode.CodeAction {
-        const action = new vscode.CodeAction('Ignore this warning', vscode.CodeActionKind.QuickFix);
+        const action = new vscode.CodeAction('Patchly: Ignore', vscode.CodeActionKind.QuickFix);
         action.command = {
             command: 'patchly.ignoreWarning',
             title: 'Ignore Warning',
-            arguments: [diagnostic, document]
+            arguments: [diagnostic.range.start.line, document.uri]
         };
         action.diagnostics = [diagnostic];
         return action;
