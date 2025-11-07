@@ -1,0 +1,61 @@
+{
+  "name": "patchly",
+  "displayName": "Patchly",
+  "description": "A VS Code extension for detecting and learning about ReDoS vulnerabilities in JavaScript and TypeScript through AI-powered, non-intrusive interactions.",
+  "version": "0.0.1",
+  "publisher": "sfu-cmpt982",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tareknaser/patchly"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescript"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [],
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "patchly-panel",
+          "title": "Patchly",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "patchly-panel": [
+        {
+          "type": "webview",
+          "id": "patchly.chatView",
+          "name": "Learn ReDoS",
+          "icon": "media/icon.svg"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "18.x",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "openai": "^6.8.1",
+    "recheck": "^4.4.5"
+  }
+}
