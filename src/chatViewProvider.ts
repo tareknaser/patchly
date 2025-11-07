@@ -377,7 +377,7 @@ To get us started, what are your first thoughts when you look at that pattern? O
                 <h3>Learn About ReDoS</h3>
                 <p>Ask me anything about Regular Expression Denial of Service vulnerabilities!</p>
                 <div class="hint">
-                    Click "Learn why this is vulnerable" from the lightbulb menu to start with context about a specific issue.
+                    Click "Explain" from the lightbulb menu to start with context about a specific issue.
                 </div>
             </div>
         </div>
