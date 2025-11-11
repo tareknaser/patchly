@@ -55,6 +55,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "openai": "^6.8.1",
     "recheck": "^4.4.5"
   }

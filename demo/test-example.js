@@ -6,19 +6,35 @@
  * along with examples of how to ignore specific vulnerabilities using comments.
 */
 
+
 const vulnerableRegex1 = /^(a+)+$/;
 
 
 /** -------------------------- SAME LINE IGNORE EXAMPLE -------------------------- */
 
+
+
+
 const vulnerableRegexIgnored2 = /^(a+)+$/; // patchly-ignore-line redos
 
+
+
+
 /** -------------------------- NEXT LINE IGNORE EXAMPLE -------------------------- */
+
+
+
 
 // patchly-disable-next-line redos
 const vulnerableRegexIgnored = /^(a+)+$/;
 
+
+
+
 /** -------------------------- BLOCK IGNORE EXAMPLE -------------------------- */
+
+
+
 
 /* patchly-disable redos */
 
@@ -27,6 +43,9 @@ const vulnerableRegex2 = /^(a+)+$/;
 const vulnerableRegex3 = /^(a+)+$/;
 
 /* patchly-enable redos */
+
+
+
 
 /** -------------OTHER EXAMPLES ------------- */
 

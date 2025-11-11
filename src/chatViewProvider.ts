@@ -8,11 +8,16 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private _conversationHistory: Array<{ role: 'system' | 'user' | 'assistant', content: string }> = [];
     private _openai: OpenAI;
 
-    // TODO: Move API key to configuration
-    private static readonly API_KEY = 'YOUR_OPENAI_API_KEY';
-
     constructor(private readonly extensionContext: vscode.ExtensionContext) {
-        this._openai = new OpenAI({ apiKey: ChatViewProvider.API_KEY });
+        const apiKey = process.env.OPENAI_API_KEY;
+
+        if (!apiKey) {
+            vscode.window.showErrorMessage('Patchly: OPENAI_API_KEY is not set. Chat will be disabled.');
+            this._openai = {} as OpenAI;
+            return;
+        }
+
+        this._openai = new OpenAI({ apiKey: apiKey || '' }); 
     }
 
     public resolveWebviewView(webviewView: vscode.WebviewView) {
@@ -377,7 +382,7 @@ To get us started, what are your first thoughts when you look at that pattern? O
                 <h3>Learn About ReDoS</h3>
                 <p>Ask me anything about Regular Expression Denial of Service vulnerabilities!</p>
                 <div class="hint">
-                    Click "Explain" from the lightbulb menu to start with context about a specific issue.
+                    Click "Explain" from the hover menu to start with context about a specific issue.
                 </div>
             </div>
         </div>

@@ -43,7 +43,7 @@ export class RecheckWrapper {
         }
 
         if (result.status === 'vulnerable') {
-            return `Potential ReDoS`;
+            return `Risk of ReDoS`;
         }
 
         return 'Unable to analyze this regex';

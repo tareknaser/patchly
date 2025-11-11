@@ -96,6 +96,25 @@ export class IgnoreHandler {
     return false;
   }
 
+  async ignoreNextLine(document: vscode.TextDocument, startLine: number, rule: RuleId = DEFAULT_RULE): Promise<boolean> {
+    if (startLine < 0 || startLine > document.lineCount) {
+      return false;
+    }
+
+    const uri = document.uri;
+    const lineStart = new vscode.Position(startLine, 0);
+    const comment = `//patchly-disable-next-line ${rule}\n`;
+
+    const edit = new vscode.WorkspaceEdit();
+    edit.insert(uri, lineStart, comment);
+
+    const success = await vscode.workspace.applyEdit(edit);
+    if (success) {
+      this.clear(document);
+    }
+    return success;
+  }
+
   clear(document?: vscode.TextDocument) {
     if (!document) this.cache.clear();
     else this.cache.delete(document.uri.toString());

@@ -34,7 +34,7 @@ export class PatchlyCodeActionProvider implements vscode.CodeActionProvider {
         action.command = {
             command: 'patchly.suggestFix',
             title: 'Suggest Fix',
-            arguments: [diagnostic, document]
+            arguments: [diagnostic.range.start, diagnostic.range.end, document.uri]
         };
         action.diagnostics = [diagnostic];
         return action;
