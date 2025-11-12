@@ -1,24 +1,13 @@
 import * as vscode from 'vscode';
-import OpenAI from 'openai';
+import { chat, getOpenAIClient, AIMessage } from './aiProvider';
 import { RecheckResult } from './recheckWrapper';
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'patchly.chatView';
     private _view?: vscode.WebviewView;
     private _conversationHistory: Array<{ role: 'system' | 'user' | 'assistant', content: string }> = [];
-    private _openai: OpenAI;
 
-    constructor(private readonly extensionContext: vscode.ExtensionContext) {
-        const apiKey = process.env.OPENAI_API_KEY;
-
-        if (!apiKey) {
-            vscode.window.showErrorMessage('Patchly: OPENAI_API_KEY is not set. Chat will be disabled.');
-            this._openai = {} as OpenAI;
-            return;
-        }
-
-        this._openai = new OpenAI({ apiKey: apiKey || '' }); 
-    }
+    constructor(private readonly extensionContext: vscode.ExtensionContext) {}
 
     public resolveWebviewView(webviewView: vscode.WebviewView) {
         this._view = webviewView;
@@ -75,7 +64,6 @@ To get us started, what are your first thoughts when you look at that pattern? O
         await vscode.commands.executeCommand('patchly.chatView.focus');
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Display the initial assistant message
         if (this._view) {
             this._view.webview.postMessage({
                 type: 'assistantMessage',
@@ -84,33 +72,37 @@ To get us started, what are your first thoughts when you look at that pattern? O
         }
     }
 
-    private async _handleUserMessage(message: string, isSystemPrompt: boolean = false) {
+    private async _handleUserMessage(message: string, isSystemPrompt = false) {
         this._conversationHistory.push({ role: 'user', content: message });
-
+      
         if (!isSystemPrompt && this._view) {
-            this._view.webview.postMessage({ type: 'userMessage', message });
+          this._view.webview.postMessage({ type: 'userMessage', message });
         }
-
+      
         this._view?.webview.postMessage({ type: 'typing', isTyping: true });
-
+      
         try {
-            const completion = await this._openai.chat.completions.create({
-                model: 'gpt-4o-mini',
-                messages: this._conversationHistory as any
-            });
-
-            const response = completion.choices[0].message.content || 'Sorry, couldn\'t generate a response.';
-            this._conversationHistory.push({ role: 'assistant', content: response });
-
+            const client = getOpenAIClient();
+            if (!client) {
+                this._view?.webview.postMessage({ type: 'typing', isTyping: false });
+                this._view?.webview.postMessage({
+                    type: 'assistantMessage',
+                    message: 'OpenAI API is not configured. Set OPENAI_API_KEY or patchly.openaiApiKey.'
+                });
+                return;
+            }
+      
+            const response = await chat(this._conversationHistory as AIMessage[], { model: 'gpt-4o-mini', temperature: 0.3 });
+      
+            const text = response || 'Sorry, couldn’t generate a response.';
+            this._conversationHistory.push({ role: 'assistant', content: text });
+      
             this._view?.webview.postMessage({ type: 'typing', isTyping: false });
-            this._view?.webview.postMessage({ type: 'assistantMessage', message: response });
+            this._view?.webview.postMessage({ type: 'assistantMessage', message: text });
         } catch (error) {
             this._view?.webview.postMessage({ type: 'typing', isTyping: false });
             const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-            this._view?.webview.postMessage({
-                type: 'assistantMessage',
-                message: `${errorMsg}. Check your API key?`
-            });
+            this._view?.webview.postMessage({ type: 'assistantMessage', message: `${errorMsg}. Check your API key?` });
         }
     }
 

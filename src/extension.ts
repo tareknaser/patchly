@@ -7,6 +7,7 @@ import { PatchlyHoverProvider } from './hoverProvider';
 import { PatchlyCodeLensProvider } from './codeLensProvider';
 import { configManager } from './configManager';
 import { IgnoreHandler } from './ignoreHandler';
+import { FixGenerator } from './fixGenerator';
 
 dotenv.config({ path: `${__dirname}/../.env` }); 
 
@@ -40,6 +41,10 @@ const debouncedAnalyzeDocument = debounce(analyzeDocument, 1000);
 export function activate(context: vscode.ExtensionContext) {
     // Register configuration manager
     configManager.init(context);
+
+    // Register fix generator
+    const fixGenerator = new FixGenerator(context);
+    fixGenerator.register();
 
     // Register chat view
     chatViewProvider = new ChatViewProvider(context);
@@ -102,63 +107,6 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.workspace.onDidSaveTextDocument(document => {
             analyzeDocument(document);
         })
-    );
-
-    // TODO: LLM-powered fix generation
-    context.subscriptions.push(
-        vscode.commands.registerCommand(
-            'patchly.suggestFix',
-            async (start: vscode.Position, end: vscode.Position, documentURI: string) => {
-                if (!start || !end || !documentURI) {
-                    vscode.window.showErrorMessage('No vulnerability info available');
-                    return;
-                }
-    
-                const uri = vscode.Uri.parse(documentURI);
-                const document = await vscode.workspace.openTextDocument(uri);
-                const range = new vscode.Range(start, end);
-                const originalText = document.getText(range);
-    
-                // TODO: Call AI to get the fixed pattern instead of dummyFix
-                const dummyFix = {
-                    fixedPattern: '/^a+$/',
-                };
-    
-                // Build a preview with before/after
-                const previewDetail = `${dummyFix.fixedPattern}`;
-    
-                const picks: vscode.QuickPickItem[] = [
-                    {
-                        label: 'Apply fix',
-                        detail: previewDetail,
-                    },
-                    {
-                        label: 'Cancel',
-                    },
-                ];
-    
-                const choice = await vscode.window.showQuickPick(picks, {
-                    placeHolder: 'Patchly suggested fix',
-                    ignoreFocusOut: true, // stays open if user clicks in editor
-                    matchOnDetail: false,
-                });
-    
-                if (!choice || choice.label !== 'Apply fix') {
-                    // User cancelled or closed the picker
-                    return;
-                }
-    
-                const edit = new vscode.WorkspaceEdit();
-                edit.replace(uri, range, dummyFix.fixedPattern);
-    
-                const success = await vscode.workspace.applyEdit(edit);
-                if (!success) {
-                    vscode.window.showErrorMessage('Could not apply fix');
-                } else {
-                    vscode.window.showInformationMessage('Patchly applied the suggested fix.');
-                }
-            }
-        )
     );
     
     
