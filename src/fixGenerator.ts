@@ -21,9 +21,7 @@ export class FixGenerator {
     this.context.subscriptions.push(disposable);
   }
 
-  /** Command handler for suggesting a fix (applies immediately, no confirmation). */
   private async handleSuggestFix(start: vscode.Position, end: vscode.Position, documentURI: string) {
-    // Bring the editor to front and dismiss the hover so the UI feels snappy.
     const uri = vscode.Uri.parse(documentURI);
     await this.focusDocAndDismissHover(uri, start);
 
@@ -31,7 +29,6 @@ export class FixGenerator {
     const range = new vscode.Range(start, end);
     const originalText = document.getText(range);
 
-    // Build risk hint (complexity + worst-case input) for the model.
     const recheck = this.recheckWrapper.checkPattern(originalText);
     const riskHint = this.formatRiskForPrompt(recheck);
 
@@ -62,8 +59,6 @@ export class FixGenerator {
     if (!ok) vscode.window.showErrorMessage('Could not apply suggested fix.');
   }
 
-  /* ----------------------------- Core AI logic ----------------------------- */
-
   /**
    * One-shot JSON call (no timeout), with caching and "must-differ" guard.
    * - Adds riskHint (complexity + worst-case input).
@@ -88,9 +83,8 @@ export class FixGenerator {
       (riskHint ? `Risk: ${riskHint.replace(/```/g, '')}\n` : '') +
       `Return exactly: {"fixedPattern":"..."} (no extra text).`;
 
-    // One call; we’ll post-process if it echoes or is unsafe.
     const resp: any = await client.chat.completions.create({
-      model: 'gpt-4o',                      // Prefer 4o for reliability; switch to 'gpt-4o-mini' for cost/latency
+      model: 'gpt-4o',
       temperature: 0.1,
       max_tokens: 96,
       response_format: { type: 'json_object' },
@@ -102,7 +96,6 @@ export class FixGenerator {
 
     let text = resp?.choices?.[0]?.message?.content ?? '';
 
-    // Parse JSON
     let out: FixResult | null = null;
     try { out = JSON.parse(text) as FixResult; }
     catch {
@@ -110,26 +103,20 @@ export class FixGenerator {
       try { out = JSON.parse(m) as FixResult; } catch { /* ignore */ }
     }
 
-    // Build a result even if the model failed by hardening and forcing a diff.
     let fixed = out?.fixedPattern || '';
     if (!fixed) fixed = this.hardenLiteral(originalLiteral);
 
-    // Ensure JS literal syntax
     if (!/^\/.*\/[a-z]*$/i.test(fixed)) fixed = this.wrapAsLiteral(fixed);
 
-    // Deterministic hardening (anchors + wildcard taming)
     fixed = this.hardenLiteral(fixed);
 
-    // If still identical to original, force a syntactic diff without semantic drift
     if (this.sameRegexLiterals(fixed, originalLiteral)) {
       fixed = this.enforceMustDiffer(fixed);
     }
 
-    // Safety check
     try {
       const rc = this.recheckWrapper.checkPattern(fixed);
       if ((rc as any)?.status && (rc as any).status !== 'safe') {
-        // Fall back to a deterministic hardened+wrapped version of the original
         fixed = this.enforceMustDiffer(this.hardenLiteral(originalLiteral));
       }
     } catch {
@@ -143,9 +130,6 @@ export class FixGenerator {
     return result;
   }
 
-  /* ------------------------------ Small helpers ------------------------------ */
-
-  /** Format risk (complexity + worst-case input) for the model prompt. */
   private formatRiskForPrompt(r: RecheckResult | undefined): string {
     if (!r) return '';
     const complexity = r?.complexity?.type ?? 'unknown';
@@ -157,21 +141,18 @@ export class FixGenerator {
     return out;
   }
 
-  /** Ensure a selection is a JS literal; if it’s just the body, wrap it. */
   private asLiteral(text: string): string {
     const t = text.trim();
     if (/^\/.*\/[a-z]*$/i.test(t)) return t;
     return this.wrapAsLiteral(t);
   }
 
-  /** Compare two JS literals structurally: same body+flags (ignoring whitespace). */
   private sameRegexLiterals(a: string, b: string): boolean {
     const pa = this.splitLiteral(this.asLiteral(a));
     const pb = this.splitLiteral(this.asLiteral(b));
     return pa.body === pb.body && pa.flags === pb.flags;
   }
 
-  /** Split a JS literal into body + flags (normalized). */
   private splitLiteral(lit: string): { body: string; flags: string } {
     const m = lit.match(/^\/([\s\S]*)\/([a-z]*)$/i);
     const body = (m ? m[1] : lit).replace(/\s+/g, '');
@@ -179,7 +160,6 @@ export class FixGenerator {
     return { body, flags };
   }
 
-  /** Deterministically “harden” a literal: anchors + tame wildcards + drop global flag. */
   private hardenLiteral(lit: string): string {
     const { body: rawBody, flags } = this.splitLiteral(lit);
     let body = rawBody;
