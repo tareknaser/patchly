@@ -1,0 +1,250 @@
+:root {
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+  
+  * { box-sizing: border-box; }
+  
+  html, body {
+    height: 100%;
+  }
+  
+  body {
+    margin: 0;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    color: var(--vscode-foreground);
+    background: var(--vscode-sideBar-background);
+  }
+  
+  #chat {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+  }
+  
+  /* ---- Header ---- */
+  .topbar {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+    background: var(--vscode-sideBar-background);
+  }
+  
+  .topbar .title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  
+  .topbar .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--vscode-charts-blue);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--vscode-charts-blue) 30%, transparent);
+  }
+  
+  .topbar .subtitle {
+    color: var(--vscode-descriptionForeground);
+    font-size: 0.9em;
+  }
+  
+  /* ---- Messages ---- */
+  #messages {
+    overflow-y: auto;
+    padding: 14px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  #messages::-webkit-scrollbar { width: 8px; }
+  #messages::-webkit-scrollbar-track { background: var(--vscode-sideBar-background); }
+  #messages::-webkit-scrollbar-thumb {
+    background: var(--vscode-scrollbarSlider-background);
+    border-radius: 4px;
+  }
+  #messages::-webkit-scrollbar-thumb:hover {
+    background: var(--vscode-scrollbarSlider-hoverBackground);
+  }
+  
+  .message {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    line-height: 1.6;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    animation: fadeIn 0.25s ease-in;
+    box-shadow: var(--shadow);
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  
+  .user {
+    align-self: flex-end;
+    background: var(--vscode-inputValidation-infoBackground);
+    border-right: 3px solid var(--vscode-button-background);
+  }
+  
+  .assistant {
+    align-self: flex-start;
+    background: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-panel-border);
+    border-left: 3px solid var(--vscode-charts-blue);
+  }
+  
+  .message p { margin: 0.5em 0; }
+  .message p:first-child { margin-top: 0; }
+  .message p:last-child { margin-bottom: 0; }
+  
+  .message code {
+    background: var(--vscode-textCodeBlock-background);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--vscode-editor-font-family);
+    font-size: 0.9em;
+    border: 1px solid color-mix(in oklab, var(--vscode-panel-border), transparent 50%);
+  }
+  
+  /* Welcome card */
+  .welcome {
+    padding: 18px 16px;
+    border-radius: var(--radius);
+    border-left: 3px solid var(--vscode-charts-blue);
+    background: var(--vscode-editor-background);
+    color: var(--vscode-descriptionForeground);
+    box-shadow: var(--shadow);
+  }
+  .welcome h3 {
+    margin: 0 0 8px 0;
+    color: var(--vscode-foreground);
+    font-size: 1.1em;
+  }
+  .welcome .hint {
+    margin-top: 8px;
+    font-size: 0.9em;
+  }
+  
+  /* ---- Typing indicator ---- */
+  .typing {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 12px;
+    margin-left: 10px;
+    margin-bottom: 6px;
+    width: fit-content;
+    background: var(--vscode-editor-background);
+    border: 1px solid var(--vscode-panel-border);
+    border-left: 3px solid var(--vscode-charts-blue);
+    border-radius: var(--radius);
+  }
+  .typing.show { display: flex; }
+  
+  .typing span {
+    width: 8px; height: 8px;
+    border-radius: 999px;
+    background: var(--vscode-foreground);
+    opacity: 0.4;
+    animation: typing 1.4s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  
+  @keyframes typing {
+    0%, 60%, 100% { opacity: 0.4; transform: scale(1); }
+    30% { opacity: 1; transform: scale(1.2); }
+  }
+  
+  /* ---- Composer ---- */
+  .composer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid var(--vscode-panel-border);
+    background: var(--vscode-sideBar-background);
+  }
+  
+  #input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+    border-radius: 8px;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    resize: none;
+    min-height: 38px;
+    max-height: 160px;
+    line-height: 1.4;
+    transition: border-color 0.2s ease;
+  }
+  #input:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder);
+    box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+  }
+  
+  #send {
+    padding: 10px 16px;
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: 1px solid color-mix(in oklab, var(--vscode-button-background), black 10%);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: var(--vscode-font-size);
+    font-weight: 600;
+    transition: transform 0.06s ease, filter 0.15s ease;
+  }
+  #send:hover { filter: brightness(1.05); transform: translateY(-1px); }
+  #send:active { transform: translateY(0); }
+  #send:disabled { opacity: 0.6; cursor: not-allowed; }
+  
+  /* ---- Code blocks: badge + copy button ---- */
+  pre.codeblock {
+    position: relative;
+    padding: 30px 12px 12px;
+    margin: 8px 0;
+    overflow-x: auto;
+    background: var(--vscode-textCodeBlock-background);
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 10px;
+  }
+  
+  pre.codeblock::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 11px;
+    opacity: 0.75;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--vscode-panel-border);
+    background: color-mix(in oklab, var(--vscode-editor-background), transparent 0%);
+  }
+  
+  .copy-btn {
+    position: absolute;
+    top: 6px;
+    right: 64px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--vscode-panel-border);
+    background: var(--vscode-sideBar-background);
+    color: var(--vscode-foreground);
+    cursor: pointer;
+  }
+  .copy-btn:hover { filter: brightness(1.1); }
+  

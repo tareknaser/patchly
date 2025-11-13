@@ -8,6 +8,7 @@ import { PatchlyCodeLensProvider } from './codeLensProvider';
 import { configManager } from './configManager';
 import { IgnoreHandler } from './ignoreHandler';
 import { FixGenerator } from './fixGenerator';
+import { RecheckResult } from './recheckWrapper';
 
 dotenv.config({ path: `${__dirname}/../.env` }); 
 
@@ -97,7 +98,6 @@ export function activate(context: vscode.ExtensionContext) {
         }),
         vscode.workspace.onDidChangeTextDocument(event => {
             if (!configManager.analyzeOnType) {
-                console.log('Analyze on type is disabled; skipping analysis.');
                 return;
             }
             if (event.document === vscode.window.activeTextEditor?.document) {
@@ -112,13 +112,13 @@ export function activate(context: vscode.ExtensionContext) {
     
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('patchly.learnMore', (diagnostic: PatchlyDiagnostic) => {
-            if (!diagnostic.recheckResult) {
+        vscode.commands.registerCommand('patchly.learnMore', (complexity: string, pattern: string, attack: string) => {
+            if (!complexity || !pattern) {
                 vscode.window.showErrorMessage('No vulnerability info available');
                 return;
             }
 
-            chatViewProvider.startConversation(diagnostic.recheckResult, diagnostic.recheckResult.pattern);
+            chatViewProvider.startConversation(complexity, pattern, attack);
         })
     );
 

@@ -7,7 +7,7 @@ export interface PatchlyConfig {
 export class ConfigManager {
     private static _instance: ConfigManager | undefined;
     private _config: PatchlyConfig = {
-        analyzeOnType: true, // default behavior
+        analyzeOnType: false, // default behavior
     };
 
     private watcher: vscode.FileSystemWatcher | undefined;
@@ -36,7 +36,7 @@ export class ConfigManager {
                 // Initial load: try first workspace folder if there is one
                 const folders = vscode.workspace.workspaceFolders;
                 if (!folders || folders.length === 0) {
-                    this._config = { analyzeOnType: true };
+                    this._config = { analyzeOnType: false };
                     return;
                 }
                 configUri = vscode.Uri.joinPath(folders[0].uri, 'patchly.config');
@@ -51,7 +51,7 @@ export class ConfigManager {
                 analyzeOnType:
                     typeof parsed.analyzeOnType === 'boolean'
                         ? parsed.analyzeOnType
-                        : true,
+                        : false,
             };
 
             this._config = nextConfig;
@@ -61,7 +61,7 @@ export class ConfigManager {
 
             // File not found → create it with defaults
             if (code === 'FileNotFound' || msg.includes('ENOENT')) {
-                this._config = { analyzeOnType: true };
+                this._config = { analyzeOnType: false };
 
                 try {
                     // If we somehow have no URI yet, try to derive one from the first workspace folder
@@ -83,7 +83,7 @@ export class ConfigManager {
 
             // Other errors → fallback to defaults, but don't try to recreate file
 
-            this._config = { analyzeOnType: true };
+            this._config = { analyzeOnType: false };
         }
     }
 
@@ -107,7 +107,7 @@ export class ConfigManager {
         });
 
         this.watcher.onDidDelete(uri => {
-            this._config = { analyzeOnType: true };
+            this._config = { analyzeOnType: false };
         });
 
         context.subscriptions.push(this.watcher);

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'none';
+      img-src %CSP_SOURCE% https:;
+      script-src 'nonce-%NONCE%';
+      style-src %CSP_SOURCE% 'unsafe-inline';
+      font-src %CSP_SOURCE%;
+    "
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patchly Chat</title>
+  <link rel="stylesheet" href="%STYLE_URI%" />
+</head>
+<body>
+  <div id="chat">
+    <header class="topbar">
+      <div class="title">
+        <span class="dot"></span>
+        <span>Patchly</span>
+      </div>
+      <div class="subtitle">Understand the risk. Fix it fast.</div>
+    </header>
+
+    <main id="messages" aria-live="polite">
+      <section class="welcome">
+        <h3>Learn About ReDoS</h3>
+        <p>Ask anything about Regular Expression Denial of Service vulnerabilities.</p>
+        <div class="hint">
+          Use <strong>Explain</strong> from the hover menu to start from a specific regex.
+        </div>
+      </section>
+    </main>
+
+    <div id="typing" class="typing" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+
+    <footer class="composer" role="form" aria-label="Message composer">
+      <textarea
+        id="input"
+        placeholder="Type a message…  (Shift+Enter for newline)"
+        rows="1"
+        aria-label="Chat input"
+      ></textarea>
+      <button id="send" title="Send (Enter)">Send</button>
+    </footer>
+  </div>
+
+  <script nonce="%NONCE%" src="%SCRIPT_URI%"></script>
+</body>
+</html>

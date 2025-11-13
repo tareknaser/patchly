@@ -11,7 +11,7 @@ export type AIMessage = {
 };
 
 export type ChatOptions = {
-    model?: string;         // default gpt-4o-mini
+    model?: string;         // default gpt-4.1
     temperature?: number;   // default 0.3
     maxTokens?: number;     // default undefined
     signal?: AbortSignal;   // optional abort signal
@@ -72,7 +72,7 @@ export async function chat(messages: AIMessage[], options?: ChatOptions): Promis
     }
 
     const {
-        model = 'gpt-4o-mini',
+        model = 'gpt-4.1',
         temperature = 0.3,
         signal,
     } = options || {};
@@ -97,7 +97,7 @@ export async function* chatStream(messages: AIMessage[], options?: ChatOptions):
     }
 
     const {
-        model = 'gpt-4o-mini',
+        model = 'gpt-4.1',
         temperature = 0.3,
         maxTokens,
         signal,

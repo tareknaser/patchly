@@ -24,7 +24,6 @@ str.replace(/^\s*/, '').replace(/\s*$/, '');
 
 
 
-
 const vulnerableRegexIgnored2 = /^(a+)+$/; // patchly-ignore-line redos
 
 

@@ -15,7 +15,7 @@ export class PatchlyHoverProvider implements vscode.HoverProvider {
 
     // command links
     const argsFix = encodeURIComponent(JSON.stringify([d.range.start, d.range.end, doc.uri]));
-    const argsExplain = encodeURIComponent(JSON.stringify([d.range]));
+    const argsExplain = encodeURIComponent(JSON.stringify([complexity, pattern, attack]));
     const argsIgnoreNext = encodeURIComponent(JSON.stringify([d.range.start.line, doc.uri]));
 
     const md = new vscode.MarkdownString();

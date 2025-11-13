@@ -24,7 +24,6 @@ export class IgnoreHandler {
   parse(document: vscode.TextDocument, rule: RuleId = DEFAULT_RULE): IgnoreState {
     const key = document.uri.toString();
     const cached = this.cache.get(key);
-    console.log(key, cached)
     if (cached && cached.version === document.version) return cached.state;
 
     const text = document.getText();

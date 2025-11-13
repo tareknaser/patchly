@@ -24,7 +24,7 @@ Example:
 
 ```json
 {
-  "analyzeOnType": true
+  "analyzeOnType": false
 }
 ```
 
@@ -32,7 +32,7 @@ Example:
 
 | Key             | Description                                                                                                                                                                                                        | Type    | Default | Possible values                        |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | ------- | -------------------------------------- |
-| `analyzeOnType` | Controls when Patchly analyzes your code for vulnerabilities. If `true`, Patchly runs analysis on **typing** and on **save**. If `false`, Patchly only analyzes when you **save** the file. | boolean | `true`  | `true` (typing + save), `false` (save only) |
+| `analyzeOnType` | Controls when Patchly analyzes your code for vulnerabilities. If `true`, Patchly runs analysis on **typing** and on **save**. If `false`, Patchly only analyzes when you **save** the file. | boolean | `false`  | `true` (typing + save), `false` (save only) |
 
 
 ## Installation & Usage
