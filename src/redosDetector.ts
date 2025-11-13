@@ -44,9 +44,6 @@ export class ReDoSDetector {
             diagnostic.source = 'Patchly';
             diagnostic.code = RULE_TOKEN;
       
-            const complexityType = recheckResult.complexity?.type || 'unknown';
-            const attackString = recheckResult.attack?.pattern || 'N/A';
-      
             diagnostic.recheckResult = recheckResult;
             diagnostics.push(diagnostic);
           }
