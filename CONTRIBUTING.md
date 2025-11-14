@@ -3,7 +3,8 @@ npm install
 npm run compile
 
 # Add your OpenAI API key
-# Edit src/chatViewProvider.ts
+# copy .env.example to your root directory and rename it .env
+# Add your API key to the .env file
 
 # Package and install
 npm install -g @vscode/vsce
