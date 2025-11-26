@@ -187,6 +187,7 @@ function isURLSearchParams(val) {
 function trim(str) {
   return str.replace(/^\s*/, '').replace(/\s*$/, '');
 }
+const regex = /\s*$/;
 
 /**
  * Determine if we're running in a standard browser environment
