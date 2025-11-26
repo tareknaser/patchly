@@ -72,7 +72,7 @@ export async function chat(messages: AIMessage[], options?: ChatOptions): Promis
     }
 
     const {
-        model = 'gpt-4.1',
+        model = 'gpt-5.1',
         temperature = 0.3,
         signal,
     } = options || {};
@@ -97,7 +97,7 @@ export async function* chatStream(messages: AIMessage[], options?: ChatOptions):
     }
 
     const {
-        model = 'gpt-4.1',
+        model = 'gpt-5.1',
         temperature = 0.3,
         maxTokens,
         signal,

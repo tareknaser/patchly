@@ -21,18 +21,18 @@ export class FixGenerator {
     this.context.subscriptions.push(disposable);
   }
 
-  private async handleSuggestFix(start: vscode.Position, end: vscode.Position, documentURI: string) {
+  private async handleSuggestFix(start: vscode.Position, end: vscode.Position, documentURI: string, complexity: string, attack: string, pattern: string) {
     const uri = vscode.Uri.parse(documentURI);
     await this.focusDocAndDismissHover(uri, start);
 
+    console.log(`Generating fix for range ${start.line}:${start.character} - ${end.line}:${end.character} in ${uri.toString()}`);
+
     const document = await vscode.workspace.openTextDocument(uri);
     const range = new vscode.Range(start, end);
-    const originalText = document.getText(range);
-
-    const recheck = this.recheckWrapper.checkPattern(originalText);
-    const riskHint = this.formatRiskForPrompt(recheck);
 
     const controller = new AbortController();
+    console.log('Risk hint for prompt:', complexity);
+    const riskHint = this.formatRiskForPrompt(complexity, attack);
     const fix = await vscode.window.withProgress<FixResult | null>({
       location: vscode.ProgressLocation.Notification,
       title: 'Patchly',
@@ -40,12 +40,14 @@ export class FixGenerator {
     }, async (_progress, token) => {
       token.onCancellationRequested(() => controller.abort());
       try {
-        return await this.getFix(originalText, controller.signal, riskHint);
+        return await this.getFix(pattern, controller.signal, riskHint);
       } catch (e: any) {
         if (e?.name === 'AbortError') return null;
         throw e;
       }
     });
+
+    console.log('Suggested fix:', fix);
 
     if (!fix?.fixedPattern) return;
 
@@ -69,24 +71,32 @@ export class FixGenerator {
   private async getFix(originalText: string, signal?: AbortSignal, riskHint?: string): Promise<FixResult> {
     // Reuse only if we previously produced a *changed* fix for this exact input
     const cached = this.fixCache.get(originalText);
-    if (cached && !this.sameRegexLiterals(cached.fixedPattern, originalText)) return cached;
+    if (cached !== undefined && cached && !this.sameRegexLiterals(cached.fixedPattern, originalText)) return cached;
 
     const client = getOpenAIClient();
     if (!client) return { fixedPattern: originalText || '/^$/' };
 
     const originalLiteral = this.asLiteral(originalText); // guarantees "/.../flags"
     const sys =
-      'You are Patchly. Output ONLY JSON: {"fixedPattern":"..."} for a JS regex literal (/.../flags) that avoids catastrophic backtracking. ' +
-      'No prose, no fences. Do NOT return the original literal. Do NOT use atomic groups or possessive quantifiers.';
-    const user =
-      `Vulnerable regex (JS literal): ${originalLiteral}\n` +
-      (riskHint ? `Risk: ${riskHint.replace(/```/g, '')}\n` : '') +
-      `Return exactly: {"fixedPattern":"..."} (no extra text).`;
+    'You are Patchly, a JavaScript regex security assistant. ' +
+    'Your only job is to output a single JSON object of the form {"fixedPattern":"..."} where fixedPattern is a JS regex literal (/pattern/flags) that is safe from catastrophic backtracking. ' +
+    'Preserve the original intent of the pattern while removing or restructuring the parts that cause exponential or superlinear behavior. ' +
+    'Output JSON only with no extra text no comments no code fences and no additional keys. ' +
+    'Do not return the same regex literal as the input. ' +
+    'Use only features supported by the JavaScript RegExp engine. ' +
+    'Do not use atomic groups possessive quantifiers backreferences that create ReDoS risk or any unsupported syntax.';
+  
+  const user =
+    `Original vulnerable regex literal: ${originalLiteral}\n` +
+    (riskHint ? `Risk context: ${riskHint.replace(/```/g, '')}\n` : '') +
+    'Return exactly one JSON object: {"fixedPattern":"..."} where fixedPattern is a single JavaScript regex literal (/pattern/flags) that avoids catastrophic backtracking while staying as close as reasonable to the original behavior. ' +
+    'Do not include explanations markdown or extra fields.';
+  
 
     const resp: any = await client.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5.1',
       temperature: 0.1,
-      max_tokens: 96,
+      reasoning_effort: 'none',
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: sys },
@@ -130,13 +140,11 @@ export class FixGenerator {
     return result;
   }
 
-  private formatRiskForPrompt(r: RecheckResult | undefined): string {
-    if (!r) return '';
-    const complexity = r?.complexity?.type ?? 'unknown';
-    const attack = r?.attack?.pattern;
+  private formatRiskForPrompt(complexity: string, pattern: string): string {
+    if (!pattern || !complexity) return '';
     let out = `Complexity=${complexity}`;
-    if (attack && String(attack).trim().length) {
-      out += `; WorstCase="${String(attack).trim()}"`;
+    if (pattern && String(pattern).trim().length) {
+      out += `; WorstCase="${String(pattern).trim()}"`;
     }
     return out;
   }
