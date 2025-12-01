@@ -96,7 +96,6 @@ export class FixGenerator {
     const resp: any = await client.chat.completions.create({
       model: 'gpt-5.1',
       temperature: 0.1,
-      reasoning_effort: 'none',
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: sys },
