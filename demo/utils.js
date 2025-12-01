@@ -1,3 +1,4 @@
+// Code taken from axios 0.21.0
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -187,7 +188,6 @@ function isURLSearchParams(val) {
 function trim(str) {
   return str.replace(/^\s*/, '').replace(/\s*$/, '');
 }
-const regex = /\s*$/;
 
 /**
  * Determine if we're running in a standard browser environment
