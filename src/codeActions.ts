@@ -20,8 +20,8 @@ export class PatchlyCodeActionProvider implements vscode.CodeActionProvider {
         const actions: vscode.CodeAction[] = [];
         for (const diagnostic of patchlyDiagnostics) {
             actions.push(
-                this.createLearnAction(diagnostic),
                 this.createFixAction(diagnostic, document),
+                this.createLearnAction(diagnostic),
                 this.createIgnoreAction(diagnostic, document)
             );
         }
@@ -34,7 +34,7 @@ export class PatchlyCodeActionProvider implements vscode.CodeActionProvider {
         action.command = {
             command: 'patchly.suggestFix',
             title: 'Suggest Fix',
-            arguments: [diagnostic.range.start, diagnostic.range.end, document.uri]
+            arguments: [diagnostic.range.start, diagnostic.range.end, document.uri, diagnostic.recheckResult?.complexity, diagnostic.recheckResult?.attack, diagnostic.recheckResult?.pattern]
         };
         action.diagnostics = [diagnostic];
         return action;
@@ -45,7 +45,7 @@ export class PatchlyCodeActionProvider implements vscode.CodeActionProvider {
         action.command = {
             command: 'patchly.learnMore',
             title: 'Learn More',
-            arguments: [diagnostic]
+            arguments: [diagnostic.recheckResult?.complexity, diagnostic.recheckResult?.pattern, diagnostic.recheckResult?.attack]
         };
         action.diagnostics = [diagnostic];
         action.isPreferred = true;
